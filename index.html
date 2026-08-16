@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENAVOL 2026 | Encuentro Nacional de Voluntariados</title>
+
+<!-- Favicon using Logo Asset Concept -->
+<link rel="icon" type="image/png" href="logo.png" onerror="this.href='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%230038a8%22/><text x=%2250%22 y=%2260%22 font-size=%2235%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>EV</text></svg>'">
+
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          enavol: {
+            blue: '#0038a8',    /* Exact Royal Blue from logo */
+            orange: '#ff6b00',  /* Exact Vibrant Orange from logo */
+            green: '#00cc44',   /* Exact Bright Green from logo */
+            dark: '#0a0f1d'
+          }
+        },
+        fontFamily: {
+          sans: ['"Plus Jakarta Sans"', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- FontAwesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+  .glass-card {
+    background: rgba(255, 255, 255, 0.90);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+  }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, #0038a8 0%, #ff6b00 50%, #00cc44 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  @keyframes pulse-subtle {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+  }
+  .animate-subtle {
+    animation: pulse-subtle 3.5s infinite ease-in-out;
+  }
+</style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-[#0038a8] selection:text-white font-sans antialiased">
+
+  <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-[#0038a8]/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 -right-40 w-96 h-96 bg-[#ff6b00]/10 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-40 left-1/3 w-96 h-96 bg-[#00cc44]/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <header class="relative z-10 w-full max-w-2xl mx-auto px-4 pt-12 pb-6 text-center">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-[#0038a8] text-xs font-bold uppercase tracking-wider mb-5 shadow-sm">
+      <i class="fas fa-award text-[#ff6b00]"></i> Plataforma Oficial de Acreditación 2026
+    </div>
+
+    <!-- Logo Container with fallback to interactive SVG representation -->
+    <div class="relative w-32 h-32 mx-auto mb-6 p-2 rounded-full bg-white shadow-2xl shadow-[#0038a8]/15 border-2 border-blue-100 flex items-center justify-center animate-subtle">
+      <img src="logo.png" alt="ENAVOL Logo" class="w-full h-full object-contain rounded-full" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><circle cx=%22100%22 cy=%22100%22 r=%2288%22 fill=%22%230038a8%22/><circle cx=%22100%22 cy=%22100%22 r=%2272%22 fill=%22white%22/><text x=%22100%22 y=%22112%22 font-size=%2245%22 font-weight=%22800%22 fill=%22%23ff6b00%22 text-anchor=%22middle%22 font-family=%22sans-serif%22>EV</text></svg>'">
+    </div>
+
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
+      ENAVOL <span class="gradient-text">2026</span>
+    </h1>
+
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0a0f1d] text-white text-xs font-semibold shadow-md mb-4">
+      <i class="fas fa-location-dot text-[#00cc44]"></i> Encuentro Nacional de Voluntariados · Perú 🇵🇪
+    </div>
+
+    <p class="text-slate-600 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+      Genera tu distintivo oficial como agente voluntario seleccionado con fondo inmersivo y compártelo en tus redes.
+    </p>
+
+    <div class="w-20 h-1.5 bg-gradient-to-r from-[#0038a8] via-[#ff6b00] to-[#00cc44] mx-auto mt-5 rounded-full"></div>
+  </header>
+
+  <main class="relative z-10 w-full max-w-xl mx-auto px-4 space-y-6 mb-16">
+    
+    <div class="glass-card rounded-2xl shadow-xl p-6 sm:p-8 transition-all duration-300">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-9 h-9 rounded-xl bg-[#0038a8]/10 text-[#0038a8] flex items-center justify-center font-bold text-sm">1</div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Sube tu fotografía personal</h2>
+          <p class="text-xs text-slate-500">Se generará automáticamente un fondo difuminado HD</p>
+        </div>
+      </div>
+
+      <!-- File input -->
+      <label for="upload" class="group relative flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer bg-slate-50 hover:bg-blue-50/50 hover:border-[#0038a8] transition-all duration-200">
+        <div class="flex flex-col items-center justify-center pt-5 pb-6 px-4 text-center">
+          <div class="w-12 h-12 rounded-full bg-blue-100 text-[#0038a8] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-sm">
+            <i class="fas fa-cloud-arrow-up text-xl"></i>
+          </div>
+          <p class="text-sm font-semibold text-slate-700"><span class="text-[#0038a8]">Haz clic para examinar</span> o arrastra tu foto</p>
+          <p class="text-xs text-slate-400 mt-1">PNG, JPG o WEBP (Alta calidad recomendada)</p>
+        </div>
+        <input type="file" id="upload" accept="image/*" class="hidden">
+      </label>
+
+      <!-- Generate Button -->
+      <button onclick="triggerGenerate()" id="generateBtn" class="mt-5 w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#0038a8] to-blue-700 text-white font-bold shadow-lg shadow-[#0038a8]/25 hover:shadow-[#0038a8]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2.5">
+        <i class="fas fa-wand-magic-sparkles text-[#ff6b00]"></i> Generar mi flyer oficial
+      </button>
+
+      <!-- Canvas Section -->
+      <div id="canvasWrapper" class="hidden mt-6 space-y-4">
+        <div class="relative w-full aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-slate-300 bg-[#0a0f1d]">
+          <canvas id="canvas" width="1080" height="1080" class="w-full h-full touch-none"></canvas>
+          
+          <div class="absolute top-4 right-4 bg-slate-900/85 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full font-medium border border-white/10 flex items-center gap-1.5 shadow-lg">
+            <span class="w-2 h-2 rounded-full bg-[#00cc44] animate-pulse"></span> Vista Previa HD
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center gap-2 text-xs font-medium text-slate-600 bg-blue-50/80 py-2.5 px-4 rounded-xl border border-blue-200">
+          <i class="fas fa-arrows-up-down-left-right text-[#0038a8]"></i> <span>Arrastra para mover tu foto o usa la rueda / pellizco para hacer zoom</span>
+        </div>
+
+        <!-- Download Button -->
+        <button onclick="downloadFlyer()" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#00cc44] to-emerald-700 hover:opacity-95 text-white font-bold shadow-lg shadow-emerald-600/25 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2.5">
+          <i class="fas fa-download"></i> Descargar flyer en máxima calidad (PNG)
+        </button>
+      </div>
+    </div>
+
+    <div class="glass-card rounded-2xl shadow-xl p-6 sm:p-8 space-y-5">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-[#ff6b00]/10 text-[#ff6b00] flex items-center justify-center font-bold text-sm">2</div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Comparte tu compromiso voluntario</h2>
+          <p class="text-xs text-slate-500">Copia el mensaje oficial para tus redes sociales</p>
+        </div>
+      </div>
+
+      <div class="relative">
+        <textarea readonly id="copyText" class="w-full h-36 p-4 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-700 leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-[#0038a8]">🤝✨ ¡Orgulloso(a) de formar parte del gran cambio!
+
+He sido seleccionado(a) como Agente Voluntario(a) Oficial para el ENAVOL 2026 (Encuentro Nacional de Voluntariados), la cumbre que une a líderes solidarios de todo el Perú 🇵🇪.
+
+¡Manos a la obra por un país más unido, empático y transformador! 💙🧡💚
+
+#ENAVOL2026 #VoluntariadoPerú #AcciónSolidaria #OrgulloVoluntario</textarea>
+      </div>
+
+      <button onclick="copyTextFunc()" class="w-full py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-sm shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
+        <i class="far fa-copy text-[#ff6b00]"></i> Copiar texto para redes
+      </button>
+
+      <div class="pt-2 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+        <div>
+          Instagram Oficial: 
+          <a href="https://www.instagram.com/" target="_blank" onclick="openInstagramProfile(event)" class="font-bold text-[#0038a8] hover:underline">@enavol.peru</a>
+        </div>
+        <div class="bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-full font-bold border border-emerald-200 flex items-center gap-1.5">
+          <i class="fas fa-fire text-[#ff6b00]"></i> +<span id="counter">1,480</span> voluntarios confirmados
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 pt-2">
+        <a href="https://www.facebook.com/" target="_blank" class="w-full">
+          <button class="w-full py-2.5 px-3 rounded-xl bg-[#1877f2] hover:bg-[#166fe5] text-white font-semibold text-xs shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+            <i class="fab fa-facebook-f"></i> <span class="hidden sm:inline">Facebook</span>
+          </button>
+        </a>
+        <a href="https://www.instagram.com/" target="_blank" class="w-full" onclick="openInstagramProfile(event)">
+          <button class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-[#0038a8] hover:opacity-95 text-white font-semibold text-xs shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+            <i class="fab fa-instagram"></i> <span class="hidden sm:inline">Instagram</span>
+          </button>
+        </a>
+        <a href="https://www.linkedin.com/" target="_blank" class="w-full">
+          <button class="w-full py-2.5 px-3 rounded-xl bg-[#0a66c2] hover:bg-[#095baf] text-white font-semibold text-xs shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+            <i class="fab fa-linkedin-in"></i> <span class="hidden sm:inline">LinkedIn</span>
+          </button>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modern Toast Notification -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-32 bg-slate-900 text-white px-5 py-3 rounded-full text-sm font-medium shadow-2xl transition-all duration-300 z-50 flex items-center gap-3 border border-white/15 pointer-events-none">
+    <i class="fas fa-check-circle text-[#00cc44] text-lg"></i>
+    <span id="toastMsg">Operación exitosa</span>
+  </div>
+
+  <footer class="relative z-10 text-center py-6 text-xs text-slate-500 border-t border-slate-200">
+    <p>© 2026 ENAVOL · Encuentro Nacional de Voluntariados. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    let img = new Image();
+    let overlay = new Image();
+    overlay.src = "overlay.png";
+    let overlayLoaded = false;
+
+    overlay.onload = () => {
+      overlayLoaded = true;
+      if (imageLoaded) drawFlyer();
+    };
+
+    overlay.onerror = () => {
+      // Fallback built-in vector overlay generation if overlay.png is missing
+      overlayLoaded = false;
+      if (imageLoaded) drawFlyer();
+    };
+
+    let scale = 1, posX = 0, posY = 0;
+    let dragging = false, startX, startY, lastDist = null;
+    let imageLoaded = false;
+
+    document.getElementById("upload").addEventListener("change", function(e){
+      const file = e.target.files[0];
+      if(!file || !file.type.startsWith("image/")) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      img.onload = () => {
+        imageLoaded = true;
+
+        // Default cover scale for user image
+        scale = Math.max(
+          canvas.width / img.width,
+          canvas.height / img.height
+        );
+
+        posX = (canvas.width - img.width * scale) / 2;
+        posY = (canvas.height - img.height * scale) / 2;
+
+        drawFlyer();
+        
+        document.getElementById("canvasWrapper").style.display = "block";
+        showToast("¡Fotografía cargada correctamente!");
+      };
+    });
+
+    function triggerGenerate() {
+      if (!imageLoaded) {
+        showToast("Por favor selecciona una fotografía primero");
+        return;
+      }
+      drawFlyer();
+      showToast("¡Flyer actualizado con éxito!");
+    }
+
+    function drawFlyer() {
+      if (!imageLoaded) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. Automatic Blurred Background Copy to fill canvas (ensures no white spaces)
+      ctx.save();
+      ctx.filter = 'blur(16px) brightness(0.7)';
+      const bgScale = Math.max(canvas.width / img.width, canvas.height / img.height) * 1.15;
+      const bgW = img.width * bgScale;
+      const bgH = img.height * bgScale;
+      const bgX = (canvas.width - bgW) / 2;
+      const bgY = (canvas.height - bgH) / 2;
+      ctx.drawImage(img, bgX, bgY, bgW, bgH);
+      ctx.restore();
+
+      // Dark overlay gradient for contrast
+      const darkGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      darkGrad.addColorStop(0, 'rgba(0,0,0,0.25)');
+      darkGrad.addColorStop(1, 'rgba(10,15,29,0.5)');
+      ctx.fillStyle = darkGrad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 2. Main Foreground User Image with Pan & Zoom
+      ctx.save();
+      const w = img.width * scale;
+      const h = img.height * scale;
+      ctx.drawImage(img, posX, posY, w, h);
+      ctx.restore();
+
+      // 3. Official Frame / Overlay Rendering
+      if (overlayLoaded && overlay.complete && overlay.naturalWidth !== 0) {
+        ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
+      } else {
+        renderFallbackOverlay();
+      }
+    }
+
+    function renderFallbackOverlay() {
+      const width = canvas.width;
+      const height = canvas.height;
+
+      // Exact logo brand colors frame border
+      const borderGrad = ctx.createLinearGradient(0, 0, width, height);
+      borderGrad.addColorStop(0, "#0038a8"); // Royal Blue
+      borderGrad.addColorStop(0.5, "#ff6b00"); // Vibrant Orange
+      borderGrad.addColorStop(1, "#00cc44");  // Bright Green
+
+      ctx.strokeStyle = borderGrad;
+      ctx.lineWidth = 36;
+      ctx.strokeRect(18, 18, width - 36, height - 36);
+
+      // Inner accent ring
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(38, 38, width - 76, height - 76);
+
+      // Bottom info card banner
+      ctx.fillStyle = "rgba(10, 15, 29, 0.94)";
+      ctx.beginPath();
+      ctx.roundRect(70, height - 230, width - 140, 165, 28);
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(255, 107, 0, 0.4)";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Texts
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "800 44px 'Plus Jakarta Sans', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("ENAVOL 2026", width / 2, height - 165);
+
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "600 24px 'Plus Jakarta Sans', sans-serif";
+      ctx.fillText("Encuentro Nacional de Voluntariados · Perú", width / 2, height - 125);
+
+      // Badge Pill in brand orange & blue
+      ctx.fillStyle = "#ff6b00";
+      ctx.beginPath();
+      ctx.roundRect(width / 2 - 215, height - 95, 430, 44, 22);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 20px 'Plus Jakarta Sans', sans-serif";
+      ctx.fillText("✨ AGENTE VOLUNTARIO OFICIAL ✨", width / 2, height - 67);
+    }
+
+    // Interactions for Desktop Mouse & Touchscreen Devices
+    canvas.addEventListener("wheel", e => {
+      e.preventDefault();
+      let zoomFactor = e.deltaY > 0 ? 0.95 : 1.05;
+
+      let oldScale = scale;
+      scale *= zoomFactor;
+      scale = Math.max(0.15, Math.min(scale, 6));
+
+      posX = canvas.width / 2 - (canvas.width / 2 - posX) * (scale / oldScale);
+      posY = canvas.height / 2 - (canvas.height / 2 - posY) * (scale / oldScale);
+
+      drawFlyer();
+    }, { passive: false });
+
+    canvas.addEventListener("mousedown", e => {
+      dragging = true;
+      startX = e.offsetX * (canvas.width / canvas.clientWidth) - posX;
+      startY = e.offsetY * (canvas.height / canvas.clientHeight) - posY;
+    });
+
+    window.addEventListener("mousemove", e => {
+      if(!dragging) return;
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      if (mouseX >= 0 && mouseX <= rect.width && mouseY >= 0 && mouseY <= rect.height) {
+        posX = (mouseX * (canvas.width / rect.width)) - startX;
+        posY = (mouseY * (canvas.height / rect.height)) - startY;
+        drawFlyer();
+      }
+    });
+
+    window.addEventListener("mouseup", () => { dragging = false; });
+
+    // Mobile Touch Gestures (Pan & Pinch to Zoom)
+    canvas.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 1) {
+        dragging = true;
+        const rect = canvas.getBoundingClientRect();
+        startX = (e.touches[0].clientX - rect.left) * (canvas.width / rect.width) - posX;
+        startY = (e.touches[0].clientY - rect.top) * (canvas.height / rect.height) - posY;
+      } else if (e.touches.length === 2) {
+        dragging = false;
+        lastDist = getTouchDistance(e.touches);
+      }
+    }, { passive: false });
+
+    canvas.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+
+      if (e.touches.length === 1 && dragging) {
+        posX = ((e.touches[0].clientX - rect.left) * (canvas.width / rect.width)) - startX;
+        posY = ((e.touches[0].clientY - rect.top) * (canvas.height / rect.height)) - startY;
+        drawFlyer();
+      } else if (e.touches.length === 2) {
+        let newDist = getTouchDistance(e.touches);
+        if (lastDist) {
+          let zoomFactor = newDist / lastDist;
+          let oldScale = scale;
+          scale *= zoomFactor;
+          scale = Math.max(0.15, Math.min(scale, 6));
+          
+          posX = canvas.width / 2 - (canvas.width / 2 - posX) * (scale / oldScale);
+          posY = canvas.height / 2 - (canvas.height / 2 - posY) * (scale / oldScale);
+          
+          drawFlyer();
+        }
+        lastDist = newDist;
+      }
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", () => {
+      dragging = false;
+      lastDist = null;
+    });
+
+    function getTouchDistance(touches) {
+      let dx = touches[0].clientX - touches[1].clientX;
+      let dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function downloadFlyer(){
+      if (!imageLoaded) return;
+      const a = document.createElement("a");
+      a.download = "enavol-2026-voluntario-oficial.png";
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+      showToast("¡Flyer descargado en máxima calidad HD!");
+    }
+
+    function copyTextFunc(){
+      const textArea = document.getElementById("copyText");
+      textArea.select();
+      textArea.setSelectionRange(0, 99999);
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textArea.value).then(() => {
+          showToast("¡Texto copiado al portapapeles!");
+        }).catch(() => {
+          fallbackCopy();
+        });
+      } else {
+        fallbackCopy();
+      }
+    }
+
+    function fallbackCopy() {
+      try {
+        document.execCommand('copy');
+        showToast("¡Texto copiado al portapapeles!");
+      } catch (err) {
+        showToast("No se pudo copiar automáticamente");
+      }
+    }
+
+    // Dynamic social proof counter
+    let count = 1480;
+    const counter = document.getElementById("counter");
+    setInterval(() => {
+      count += Math.floor(Math.random() * 3) + 1;
+      counter.innerText = count.toLocaleString();
+    }, 4500);
+
+    // Toast Notification System
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      const toastMsg = document.getElementById("toastMsg");
+      toastMsg.innerText = message;
+      toast.classList.remove("translate-y-32");
+      toast.classList.add("translate-y-0");
+      
+      setTimeout(() => {
+        toast.classList.remove("translate-y-0");
+        toast.classList.add("translate-y-32");
+      }, 3200);
+    }
+
+    function openInstagramProfile(e) {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile) {
+        e.preventDefault();
+        window.location.href = "instagram://user?username=enavol.peru";
+        setTimeout(() => {
+          window.open("https://www.instagram.com/", "_blank");
+        }, 800);
+      }
+    }
+  </script>
+</body>
+</html>
