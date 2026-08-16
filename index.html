@@ -116,6 +116,42 @@
         <input type="file" id="upload" accept="image/*" class="hidden">
       </label>
 
+
+      <!-- Optional photo effect -->
+      <div id="photoEffectPrompt" class="hidden mt-4 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-4 sm:p-5 shadow-sm">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 shrink-0 rounded-xl bg-[#0038a8]/10 text-[#0038a8] flex items-center justify-center">
+            <i class="fas fa-wand-magic-sparkles"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base">¿Quieres desenfocar el fondo de tu foto?</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+              Podemos aplicar un efecto de profundidad suave para destacar tu fotografía. No se elimina ni recorta el fondo original.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+          <button type="button" onclick="enablePhotoBlur()" class="py-2.5 px-4 rounded-xl bg-[#0038a8] hover:bg-blue-800 text-white text-sm font-bold transition-all shadow-md">
+            Sí, desenfocar
+          </button>
+          <button type="button" onclick="skipPhotoBlur()" class="py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-sm font-semibold transition-all">
+            No, continuar
+          </button>
+        </div>
+      </div>
+
+      <!-- Optional effect controls -->
+      <div id="photoEffectControls" class="hidden mt-3 flex items-center justify-between gap-3 rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
+        <div class="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
+          <i class="fas fa-circle-half-stroke text-[#0038a8]"></i>
+          <span>Desenfoque activado</span>
+        </div>
+        <button type="button" onclick="undoPhotoBlur()" class="text-xs sm:text-sm font-bold text-[#0038a8] hover:underline">
+          Deshacer
+        </button>
+      </div>
+
       <!-- Generate Button -->
       <button onclick="triggerGenerate()" id="generateBtn" class="mt-5 w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#0038a8] to-blue-700 text-white font-bold shadow-lg shadow-[#0038a8]/25 hover:shadow-[#0038a8]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2.5">
         <i class="fas fa-wand-magic-sparkles text-[#ff6b00]"></i> Generar mi flyer oficial
@@ -132,7 +168,7 @@
         </div>
 
         <div class="flex items-center justify-center gap-2 text-xs font-medium text-slate-600 bg-blue-50/80 py-2.5 px-4 rounded-xl border border-blue-200">
-          <i class="fas fa-arrows-up-down-left-right text-[#0038a8]"></i> <span>Arrastra para ajustar tu foto o usa la rueda para hacer zoom</span>
+          <i class="fas fa-arrows-up-down-left-right text-[#0038a8]"></i> <span>Arrastra para ajustar tu foto o usa la rueda para hacer zoom · Puedes deshacer el desenfoque cuando quieras</span>
         </div>
 
         <!-- Download Button -->
@@ -208,9 +244,12 @@ He sido seleccionado(a) como Voluntario(a) para participar en el ENAVOL 2026 que
   <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+
 const upload = document.getElementById("upload");
 const canvasWrapper = document.getElementById("canvasWrapper");
 const generateBtn = document.getElementById("generateBtn");
+const photoEffectPrompt = document.getElementById("photoEffectPrompt");
+const photoEffectControls = document.getElementById("photoEffectControls");
 
 const img = new Image();
 const overlay = new Image();
@@ -218,10 +257,21 @@ overlay.src = "overlay.png";
 
 let overlayLoaded = false;
 let imageLoaded = false;
-let processedPerson = null;
-let scale = 1, posX = 0, posY = 0;
-let dragging = false, startX = 0, startY = 0, lastDist = null;
 
+let scale = 1;
+let posX = 0;
+let posY = 0;
+
+let dragging = false;
+let startX = 0;
+let startY = 0;
+let lastDist = null;
+
+let blurEnabled = false;
+
+// ------------------------------------------------------------------
+// OVERLAY OFICIAL
+// ------------------------------------------------------------------
 overlay.onload = () => {
   overlayLoaded = true;
   if (imageLoaded) drawFlyer();
@@ -233,10 +283,14 @@ overlay.onerror = () => {
   showToast("No se pudo cargar overlay.png. Verifica que esté junto a index.html.");
 };
 
+// ------------------------------------------------------------------
+// CARGA DE UNA SOLA FOTOGRAFÍA
+// ------------------------------------------------------------------
 upload.addEventListener("change", handleFile);
 
 async function handleFile(event) {
   const file = event.target.files && event.target.files[0];
+
   if (!file) return;
 
   if (!file.type.startsWith("image/")) {
@@ -247,10 +301,12 @@ async function handleFile(event) {
 
   const reader = new FileReader();
 
-  reader.onload = async function(e) {
-    img.onload = async function() {
+  reader.onload = function(e) {
+    img.onload = function() {
       imageLoaded = true;
+      blurEnabled = false;
 
+      // Reinicia el encuadre.
       const coverScale = Math.max(
         canvas.width / img.naturalWidth,
         canvas.height / img.naturalHeight
@@ -263,65 +319,20 @@ async function handleFile(event) {
       canvasWrapper.classList.remove("hidden");
       canvasWrapper.style.display = "block";
 
-      // Una sola foto: se usa como fondo y como foto principal.
-      processedPerson = img;
+      // Reinicia la interfaz del efecto.
+      photoEffectControls.classList.add("hidden");
+      photoEffectPrompt.classList.remove("hidden");
+
+      generateBtn.disabled = false;
+      generateBtn.innerHTML =
+        '<i class="fas fa-wand-magic-sparkles text-[#ff6b00]"></i> Generar mi flyer oficial';
+
       drawFlyer();
 
-      generateBtn.disabled = true;
-      generateBtn.innerHTML =
-        '<i class="fas fa-spinner fa-spin text-[#ff6b00]"></i> Preparando fotografía...';
-
-      showToast("Fotografía cargada. Preparando la persona...");
-
-      // Quita el fondo automáticamente. Si el servicio no carga o falla,
-      // se conserva la foto original para que la herramienta siga funcionando.
-      try {
-        const module = await import(
-          "https://cdn.jsdelivr.net/npm/@imgly/background-removal/+esm"
-        );
-
-        if (typeof module.removeBackground !== "function") {
-          throw new Error("No se encontró removeBackground.");
-        }
-
-        const blob = await module.removeBackground(file, {
-          model: "isnet_quint8",
-          output: {
-            format: "image/png",
-            type: "foreground"
-          }
-        });
-
-        const cutout = new Image();
-
-        await new Promise((resolve, reject) => {
-          const objectUrl = URL.createObjectURL(blob);
-
-          cutout.onload = () => {
-            URL.revokeObjectURL(objectUrl);
-            resolve();
-          };
-
-          cutout.onerror = reject;
-          cutout.src = objectUrl;
-        });
-
-        processedPerson = cutout;
-        drawFlyer();
-        showToast("Fotografía preparada correctamente.");
-      } catch (error) {
-        console.warn("No se pudo quitar el fondo:", error);
-        processedPerson = img;
-        drawFlyer();
-        showToast("Se usó la fotografía original. Puedes continuar.");
-      } finally {
-        generateBtn.disabled = false;
-        generateBtn.innerHTML =
-          '<i class="fas fa-wand-magic-sparkles text-[#ff6b00]"></i> Generar mi flyer oficial';
-      }
+      showToast("Fotografía cargada correctamente.");
     };
 
-    img.onerror = () => {
+    img.onerror = function() {
       imageLoaded = false;
       showToast("No se pudo abrir la fotografía.");
     };
@@ -329,13 +340,61 @@ async function handleFile(event) {
     img.src = e.target.result;
   };
 
-  reader.onerror = () => {
+  reader.onerror = function() {
     showToast("No se pudo leer la fotografía.");
   };
 
   reader.readAsDataURL(file);
 }
 
+// ------------------------------------------------------------------
+// OPCIÓN: SÍ QUIERO DESENFOCAR
+// ------------------------------------------------------------------
+function enablePhotoBlur() {
+  if (!imageLoaded) return;
+
+  blurEnabled = true;
+
+  photoEffectPrompt.classList.add("hidden");
+  photoEffectControls.classList.remove("hidden");
+
+  drawFlyer();
+
+  showToast("Efecto de profundidad aplicado.");
+}
+
+// ------------------------------------------------------------------
+// OPCIÓN: NO QUIERO DESENFOCAR
+// ------------------------------------------------------------------
+function skipPhotoBlur() {
+  if (!imageLoaded) return;
+
+  blurEnabled = false;
+
+  photoEffectPrompt.classList.add("hidden");
+  photoEffectControls.classList.add("hidden");
+
+  drawFlyer();
+
+  showToast("Continuamos con tu fotografía original.");
+}
+
+// ------------------------------------------------------------------
+// DESHACER
+// ------------------------------------------------------------------
+function undoPhotoBlur() {
+  blurEnabled = false;
+
+  photoEffectControls.classList.add("hidden");
+
+  drawFlyer();
+
+  showToast("Desenfoque deshecho.");
+}
+
+// ------------------------------------------------------------------
+// GENERAR
+// ------------------------------------------------------------------
 function triggerGenerate() {
   if (!imageLoaded) {
     showToast("Por favor selecciona una fotografía primero.");
@@ -346,13 +405,77 @@ function triggerGenerate() {
   showToast("Flyer actualizado correctamente.");
 }
 
+// ------------------------------------------------------------------
+// DIBUJO PRINCIPAL
+// ------------------------------------------------------------------
 function drawFlyer() {
   if (!imageLoaded) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 1. MISMA FOTO COMO FONDO:
-  // ampliada, desenfocada y oscurecida.
+  /*
+   * MEJORA VISUAL:
+   * Canvas trabaja en 1080x1080 y usamos resampling de alta calidad.
+   * Además aplicamos una mejora muy ligera de contraste/saturación.
+   */
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  // ---------------------------------------------------------------
+  // FONDO
+  // La MISMA fotografía del participante se utiliza como fondo.
+  // ---------------------------------------------------------------
+  drawBackground();
+
+  // ---------------------------------------------------------------
+  // FOTO PRINCIPAL
+  // Se mantiene completa: NO se elimina el fondo.
+  // ---------------------------------------------------------------
+  ctx.save();
+
+  ctx.filter = "contrast(1.025) saturate(1.025) brightness(1.008)";
+
+  const foregroundW = img.naturalWidth * scale;
+  const foregroundH = img.naturalHeight * scale;
+
+  ctx.drawImage(
+    img,
+    posX,
+    posY,
+    foregroundW,
+    foregroundH
+  );
+
+  ctx.restore();
+
+  // ---------------------------------------------------------------
+  // SI EL USUARIO ELIGE DESENFOCAR:
+  // hacemos un efecto de profundidad suave alrededor de la zona
+  // central, sin eliminar ni recortar el fondo de la fotografía.
+  // ---------------------------------------------------------------
+  if (blurEnabled) {
+    drawDepthEffect();
+  }
+
+  // ---------------------------------------------------------------
+  // OVERLAY OFICIAL
+  // Siempre es la última capa.
+  // ---------------------------------------------------------------
+  if (overlayLoaded && overlay.complete && overlay.naturalWidth > 0) {
+    ctx.drawImage(
+      overlay,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+  }
+}
+
+// ------------------------------------------------------------------
+// FONDO DESENFOCADO
+// ------------------------------------------------------------------
+function drawBackground() {
   ctx.save();
 
   const bgScale = Math.max(
@@ -362,50 +485,135 @@ function drawFlyer() {
 
   const bgW = img.naturalWidth * bgScale;
   const bgH = img.naturalHeight * bgScale;
+
   const bgX = (canvas.width - bgW) / 2;
   const bgY = (canvas.height - bgH) / 2;
 
-  ctx.filter = "blur(24px) brightness(0.62)";
-  ctx.drawImage(img, bgX, bgY, bgW, bgH);
+  ctx.filter = "blur(24px) brightness(0.62) saturate(1.02)";
+
+  ctx.drawImage(
+    img,
+    bgX,
+    bgY,
+    bgW,
+    bgH
+  );
 
   ctx.restore();
 
-  // Capa oscura para que el marco y la persona tengan contraste.
-  const darkGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  darkGrad.addColorStop(0, "rgba(0,0,0,0.20)");
-  darkGrad.addColorStop(0.55, "rgba(10,15,29,0.28)");
-  darkGrad.addColorStop(1, "rgba(10,15,29,0.58)");
+  // Capa para mejorar lectura del overlay.
+  const darkGrad = ctx.createLinearGradient(
+    0,
+    0,
+    0,
+    canvas.height
+  );
+
+  darkGrad.addColorStop(0, "rgba(0,0,0,0.18)");
+  darkGrad.addColorStop(0.55, "rgba(10,15,29,0.25)");
+  darkGrad.addColorStop(1, "rgba(10,15,29,0.55)");
 
   ctx.fillStyle = darkGrad;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // 2. PERSONA EN PRIMER PLANO:
-  // usa el recorte automático cuando está disponible.
-  const foreground = processedPerson || img;
-
-  ctx.save();
-
-  const w = foreground.naturalWidth * scale;
-  const h = foreground.naturalHeight * scale;
-
-  ctx.drawImage(foreground, posX, posY, w, h);
-
-  ctx.restore();
-
-  // 3. OVERLAY OFICIAL:
-  // siempre se dibuja al final y por encima de todo.
-  if (overlayLoaded && overlay.complete && overlay.naturalWidth > 0) {
-    ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
-  }
+  ctx.fillRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
 }
 
-// Zoom con rueda en computadora.
+// ------------------------------------------------------------------
+// EFECTO DE PROFUNDIDAD SUAVE
+//
+// Importante:
+// No intenta recortar a la persona.
+// No elimina el fondo.
+// Crea una zona central de mayor nitidez y suaviza visualmente
+// las zonas exteriores de la misma fotografía.
+// ------------------------------------------------------------------
+function drawDepthEffect() {
+  const temp = document.createElement("canvas");
+
+  temp.width = canvas.width;
+  temp.height = canvas.height;
+
+  const tctx = temp.getContext("2d");
+
+  tctx.imageSmoothingEnabled = true;
+  tctx.imageSmoothingQuality = "high";
+
+  // Foto desenfocada completa.
+  tctx.save();
+  tctx.filter = "blur(9px) brightness(1.005) contrast(1.015)";
+
+  tctx.drawImage(
+    img,
+    posX,
+    posY,
+    img.naturalWidth * scale,
+    img.naturalHeight * scale
+  );
+
+  tctx.restore();
+
+  /*
+   * Máscara radial suave.
+   * El centro conserva la foto principal y los bordes reciben
+   * progresivamente la versión desenfocada.
+   */
+  const mask = tctx.createRadialGradient(
+    canvas.width * 0.5,
+    canvas.height * 0.47,
+    canvas.width * 0.18,
+    canvas.width * 0.5,
+    canvas.height * 0.47,
+    canvas.width * 0.62
+  );
+
+  mask.addColorStop(0, "rgba(0,0,0,0)");
+  mask.addColorStop(0.48, "rgba(0,0,0,0.03)");
+  mask.addColorStop(0.72, "rgba(0,0,0,0.35)");
+  mask.addColorStop(1, "rgba(0,0,0,0.90)");
+
+  tctx.globalCompositeOperation = "destination-in";
+  tctx.fillStyle = mask;
+  tctx.fillRect(0, 0, temp.width, temp.height);
+
+  ctx.drawImage(temp, 0, 0);
+
+  // Viñeta extremadamente ligera para reforzar el foco.
+  const vignette = ctx.createRadialGradient(
+    canvas.width * 0.5,
+    canvas.height * 0.45,
+    canvas.width * 0.25,
+    canvas.width * 0.5,
+    canvas.height * 0.45,
+    canvas.width * 0.78
+  );
+
+  vignette.addColorStop(0, "rgba(0,0,0,0)");
+  vignette.addColorStop(0.75, "rgba(0,0,0,0.02)");
+  vignette.addColorStop(1, "rgba(0,0,0,0.16)");
+
+  ctx.fillStyle = vignette;
+  ctx.fillRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+}
+
+// ------------------------------------------------------------------
+// ZOOM CON RUEDA
+// ------------------------------------------------------------------
 canvas.addEventListener("wheel", function(e) {
   e.preventDefault();
 
   if (!imageLoaded) return;
 
   const oldScale = scale;
+
   scale *= e.deltaY > 0 ? 0.95 : 1.05;
   scale = Math.max(0.15, Math.min(scale, 6));
 
@@ -418,15 +626,23 @@ canvas.addEventListener("wheel", function(e) {
   drawFlyer();
 }, { passive: false });
 
-// Mover foto con mouse.
+// ------------------------------------------------------------------
+// ARRASTRAR CON MOUSE
+// ------------------------------------------------------------------
 canvas.addEventListener("mousedown", function(e) {
   if (!imageLoaded) return;
 
   dragging = true;
 
   const rect = canvas.getBoundingClientRect();
-  const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-  const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+  const x =
+    (e.clientX - rect.left) *
+    (canvas.width / rect.width);
+
+  const y =
+    (e.clientY - rect.top) *
+    (canvas.height / rect.height);
 
   startX = x - posX;
   startY = y - posY;
@@ -439,8 +655,15 @@ window.addEventListener("mousemove", function(e) {
 
   const rect = canvas.getBoundingClientRect();
 
-  posX = (e.clientX - rect.left) * (canvas.width / rect.width) - startX;
-  posY = (e.clientY - rect.top) * (canvas.height / rect.height) - startY;
+  posX =
+    (e.clientX - rect.left) *
+    (canvas.width / rect.width) -
+    startX;
+
+  posY =
+    (e.clientY - rect.top) *
+    (canvas.height / rect.height) -
+    startY;
 
   drawFlyer();
 });
@@ -450,7 +673,9 @@ window.addEventListener("mouseup", function() {
   canvas.style.cursor = "grab";
 });
 
-// Mover y hacer zoom con los dedos en celular.
+// ------------------------------------------------------------------
+// MOVIMIENTO Y PINCH-TO-ZOOM EN CELULAR
+// ------------------------------------------------------------------
 canvas.addEventListener("touchstart", function(e) {
   if (!imageLoaded) return;
 
@@ -458,14 +683,20 @@ canvas.addEventListener("touchstart", function(e) {
     dragging = true;
 
     const rect = canvas.getBoundingClientRect();
-    const x = (e.touches[0].clientX - rect.left) *
+
+    const x =
+      (e.touches[0].clientX - rect.left) *
       (canvas.width / rect.width);
-    const y = (e.touches[0].clientY - rect.top) *
+
+    const y =
+      (e.touches[0].clientY - rect.top) *
       (canvas.height / rect.height);
 
     startX = x - posX;
     startY = y - posY;
-  } else if (e.touches.length === 2) {
+  }
+
+  if (e.touches.length === 2) {
     dragging = false;
     lastDist = getTouchDistance(e.touches);
   }
@@ -479,14 +710,20 @@ canvas.addEventListener("touchmove", function(e) {
   const rect = canvas.getBoundingClientRect();
 
   if (e.touches.length === 1 && dragging) {
-    posX = (e.touches[0].clientX - rect.left) *
-      (canvas.width / rect.width) - startX;
+    posX =
+      (e.touches[0].clientX - rect.left) *
+      (canvas.width / rect.width) -
+      startX;
 
-    posY = (e.touches[0].clientY - rect.top) *
-      (canvas.height / rect.height) - startY;
+    posY =
+      (e.touches[0].clientY - rect.top) *
+      (canvas.height / rect.height) -
+      startY;
 
     drawFlyer();
-  } else if (e.touches.length === 2) {
+  }
+
+  if (e.touches.length === 2) {
     const newDist = getTouchDistance(e);
 
     if (lastDist) {
@@ -496,10 +733,12 @@ canvas.addEventListener("touchmove", function(e) {
       scale = Math.max(0.15, Math.min(scale, 6));
 
       posX = canvas.width / 2 -
-        (canvas.width / 2 - posX) * (scale / oldScale);
+        (canvas.width / 2 - posX) *
+        (scale / oldScale);
 
       posY = canvas.height / 2 -
-        (canvas.height / 2 - posY) * (scale / oldScale);
+        (canvas.height / 2 - posY) *
+        (scale / oldScale);
 
       drawFlyer();
     }
@@ -514,12 +753,20 @@ canvas.addEventListener("touchend", function() {
 });
 
 function getTouchDistance(touches) {
-  const dx = touches[0].clientX - touches[1].clientX;
-  const dy = touches[0].clientY - touches[1].clientY;
+  const dx =
+    touches[0].clientX -
+    touches[1].clientX;
+
+  const dy =
+    touches[0].clientY -
+    touches[1].clientY;
 
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+// ------------------------------------------------------------------
+// DESCARGAR
+// ------------------------------------------------------------------
 function downloadFlyer() {
   if (!imageLoaded) {
     showToast("Primero selecciona una fotografía.");
@@ -529,8 +776,12 @@ function downloadFlyer() {
   drawFlyer();
 
   const a = document.createElement("a");
-  a.download = "enavol-2026-voluntario-oficial.png";
-  a.href = canvas.toDataURL("image/png");
+
+  a.download =
+    "enavol-2026-voluntario-oficial.png";
+
+  a.href =
+    canvas.toDataURL("image/png");
 
   document.body.appendChild(a);
   a.click();
@@ -539,63 +790,117 @@ function downloadFlyer() {
   showToast("Flyer descargado en máxima calidad HD.");
 }
 
+// ------------------------------------------------------------------
+// COPIAR TEXTO
+// ------------------------------------------------------------------
 function copyTextFunc() {
-  const textArea = document.getElementById("copyText");
-  const text = textArea.value;
+  const textArea =
+    document.getElementById("copyText");
 
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text)
-      .then(() => showToast("Texto copiado al portapapeles."))
-      .catch(() => fallbackCopy());
+  const text =
+    textArea.value;
+
+  if (
+    navigator.clipboard &&
+    navigator.clipboard.writeText
+  ) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() =>
+        showToast(
+          "Texto copiado al portapapeles."
+        )
+      )
+      .catch(() =>
+        fallbackCopy()
+      );
   } else {
     fallbackCopy();
   }
 }
 
 function fallbackCopy() {
-  const textArea = document.getElementById("copyText");
+  const textArea =
+    document.getElementById("copyText");
 
   textArea.focus();
   textArea.select();
-  textArea.setSelectionRange(0, textArea.value.length);
+  textArea.setSelectionRange(
+    0,
+    textArea.value.length
+  );
 
   try {
     document.execCommand("copy");
-    showToast("Texto copiado al portapapeles.");
+    showToast(
+      "Texto copiado al portapapeles."
+    );
   } catch (error) {
-    showToast("No se pudo copiar automáticamente.");
+    showToast(
+      "No se pudo copiar automáticamente."
+    );
   }
 }
 
-// CONTADOR:
-// empieza en 264 y aumenta cada 4 segundos indefinidamente.
+// ------------------------------------------------------------------
+// CONTADOR
+// 264 inicial + crecimiento cada 4 segundos.
+// ------------------------------------------------------------------
 let count = 264;
-const counter = document.getElementById("counter");
 
-counter.innerText = count.toLocaleString();
+const counter =
+  document.getElementById("counter");
+
+counter.innerText =
+  count.toLocaleString();
 
 setInterval(function() {
-  count += Math.floor(Math.random() * 3) + 1;
-  counter.innerText = count.toLocaleString();
+  count +=
+    Math.floor(Math.random() * 3) + 1;
+
+  counter.innerText =
+    count.toLocaleString();
 }, 4000);
 
+// ------------------------------------------------------------------
+// TOAST
+// ------------------------------------------------------------------
 function showToast(message) {
-  const toast = document.getElementById("toast");
-  const toastMsg = document.getElementById("toastMsg");
+  const toast =
+    document.getElementById("toast");
+
+  const toastMsg =
+    document.getElementById("toastMsg");
 
   toastMsg.innerText = message;
 
-  toast.classList.remove("translate-y-32");
-  toast.classList.add("translate-y-0");
+  toast.classList.remove(
+    "translate-y-32"
+  );
 
-  setTimeout(() => {
-    toast.classList.remove("translate-y-0");
-    toast.classList.add("translate-y-32");
+  toast.classList.add(
+    "translate-y-0"
+  );
+
+  setTimeout(function() {
+    toast.classList.remove(
+      "translate-y-0"
+    );
+
+    toast.classList.add(
+      "translate-y-32"
+    );
   }, 3200);
 }
 
+// ------------------------------------------------------------------
+// INSTAGRAM
+// ------------------------------------------------------------------
 function openInstagramProfile(e) {
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isMobile =
+    /Android|iPhone|iPad|iPod/i.test(
+      navigator.userAgent
+    );
 
   if (isMobile) {
     e.preventDefault();
@@ -603,7 +908,7 @@ function openInstagramProfile(e) {
     window.location.href =
       "instagram://user?username=enavol.peru";
 
-    setTimeout(() => {
+    setTimeout(function() {
       window.open(
         "https://www.instagram.com/enavol.peru/",
         "_blank"
