@@ -160,7 +160,7 @@
       <!-- Canvas Section -->
       <div id="canvasWrapper" class="hidden mt-6 space-y-4">
         <div class="relative w-full aspect-square rounded-2xl overflow-hidden shadow-2xl border-2 border-slate-300 bg-[#0a0f1d]">
-          <canvas id="canvas" width="1080" height="1080" class="w-full h-full touch-none"></canvas>
+          <canvas id="canvas" width="1080" height="1080" class="w-full h-full touch-none" style="touch-action:none; cursor:grab;"></canvas>
           
           <div class="absolute top-4 right-4 bg-slate-900/85 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full font-medium border border-white/10 flex items-center gap-1.5 shadow-lg">
             <span class="w-2 h-2 rounded-full bg-[#00cc44] animate-pulse"></span> Vista Previa HD
@@ -674,15 +674,41 @@ window.addEventListener("mouseup", function() {
 });
 
 // ------------------------------------------------------------------
-// MOVIMIENTO Y PINCH-TO-ZOOM EN CELULAR
+// MOVIMIENTO Y ZOOM EN CELULAR
 // ------------------------------------------------------------------
+// Se conserva:
+// 1 dedo  -> mover la fotografía
+// 2 dedos -> zoom con pinch
+// doble toque -> zoom rápido
+// ------------------------------------------------------------------
+let mobileDragging = false;
+let mobilePinching = false;
+let mobileStartX = 0;
+let mobileStartY = 0;
+let mobileLastDistance = 0;
+let lastTapTime = 0;
+
+canvas.style.touchAction = "none";
+
 canvas.addEventListener("touchstart", function(e) {
   if (!imageLoaded) return;
 
-  if (e.touches.length === 1) {
-    dragging = true;
+  e.preventDefault();
 
-    const rect = canvas.getBoundingClientRect();
+  const rect = canvas.getBoundingClientRect();
+
+  // Dos dedos: activar PINCH-TO-ZOOM.
+  if (e.touches.length === 2) {
+    mobileDragging = false;
+    mobilePinching = true;
+    mobileLastDistance = getTouchDistance(e.touches);
+    return;
+  }
+
+  // Un dedo: mover la fotografía.
+  if (e.touches.length === 1) {
+    mobilePinching = false;
+    mobileDragging = true;
 
     const x =
       (e.touches[0].clientX - rect.left) *
@@ -692,76 +718,137 @@ canvas.addEventListener("touchstart", function(e) {
       (e.touches[0].clientY - rect.top) *
       (canvas.height / rect.height);
 
-    startX = x - posX;
-    startY = y - posY;
-  }
+    mobileStartX = x - posX;
+    mobileStartY = y - posY;
 
-  if (e.touches.length === 2) {
-    dragging = false;
-    lastDist = getTouchDistance(e.touches);
+    // Doble toque: zoom rápido centrado en el punto tocado.
+    const now = Date.now();
+
+    if (now - lastTapTime < 300) {
+      zoomAtPoint(x, y, 1.35);
+      mobileDragging = false;
+    }
+
+    lastTapTime = now;
   }
 }, { passive: false });
 
 canvas.addEventListener("touchmove", function(e) {
-  e.preventDefault();
-
   if (!imageLoaded) return;
+
+  e.preventDefault();
 
   const rect = canvas.getBoundingClientRect();
 
-  if (e.touches.length === 1 && dragging) {
-    posX =
-      (e.touches[0].clientX - rect.left) *
-      (canvas.width / rect.width) -
-      startX;
+  // PINCH-TO-ZOOM REAL.
+  if (e.touches.length === 2 && mobilePinching) {
+    const newDistance = getTouchDistance(e);
 
-    posY =
+    if (mobileLastDistance > 0) {
+      const factor = newDistance / mobileLastDistance;
+
+      // Limita pequeños saltos de escala por evento.
+      const safeFactor = Math.max(0.90, Math.min(1.10, factor));
+
+      const center = getTouchCenter(e);
+
+      zoomAtPoint(
+        center.x,
+        center.y,
+        safeFactor
+      );
+    }
+
+    mobileLastDistance = newDistance;
+    return;
+  }
+
+  // MOVER CON UN DEDO.
+  if (e.touches.length === 1 && mobileDragging) {
+    const x =
+      (e.touches[0].clientX - rect.left) *
+      (canvas.width / rect.width);
+
+    const y =
       (e.touches[0].clientY - rect.top) *
-      (canvas.height / rect.height) -
-      startY;
+      (canvas.height / rect.height);
+
+    posX = x - mobileStartX;
+    posY = y - mobileStartY;
 
     drawFlyer();
   }
+}, { passive: false });
 
-  if (e.touches.length === 2) {
-    const newDist = getTouchDistance(e);
+canvas.addEventListener("touchend", function(e) {
+  e.preventDefault();
 
-    if (lastDist) {
-      const oldScale = scale;
+  if (e.touches.length < 2) {
+    mobilePinching = false;
+    mobileLastDistance = 0;
+  }
 
-      scale *= newDist / lastDist;
-      scale = Math.max(0.15, Math.min(scale, 6));
-
-      posX = canvas.width / 2 -
-        (canvas.width / 2 - posX) *
-        (scale / oldScale);
-
-      posY = canvas.height / 2 -
-        (canvas.height / 2 - posY) *
-        (scale / oldScale);
-
-      drawFlyer();
-    }
-
-    lastDist = newDist;
+  if (e.touches.length === 0) {
+    mobileDragging = false;
   }
 }, { passive: false });
 
-canvas.addEventListener("touchend", function() {
-  dragging = false;
-  lastDist = null;
-});
+canvas.addEventListener("touchcancel", function() {
+  mobileDragging = false;
+  mobilePinching = false;
+  mobileLastDistance = 0;
+}, { passive: false });
 
-function getTouchDistance(touches) {
+function zoomAtPoint(x, y, factor) {
+  const oldScale = scale;
+
+  scale *= factor;
+  scale = Math.max(0.15, Math.min(scale, 6));
+
+  // Mantiene el punto tocado bajo los dedos durante el zoom.
+  posX =
+    x - (x - posX) * (scale / oldScale);
+
+  posY =
+    y - (y - posY) * (scale / oldScale);
+
+  drawFlyer();
+}
+
+function getTouchDistance(e) {
   const dx =
-    touches[0].clientX -
-    touches[1].clientX;
+    e.touches[0].clientX -
+    e.touches[1].clientX;
 
   const dy =
-    touches[0].clientY -
-    touches[1].clientY;
+    e.touches[0].clientY -
+    e.touches[1].clientY;
 
-  return Math.sqrt(dx * dx + dy * dy);
+  return Math.sqrt(
+    dx * dx + dy * dy
+  );
+}
+
+function getTouchCenter(e) {
+  const rect = canvas.getBoundingClientRect();
+
+  const clientX =
+    (e.touches[0].clientX +
+     e.touches[1].clientX) / 2;
+
+  const clientY =
+    (e.touches[0].clientY +
+     e.touches[1].clientY) / 2;
+
+  return {
+    x:
+      (clientX - rect.left) *
+      (canvas.width / rect.width),
+
+    y:
+      (clientY - rect.top) *
+      (canvas.height / rect.height)
+  };
 }
 
 // ------------------------------------------------------------------
