@@ -115,47 +115,15 @@
         </div>
         <input type="file" id="upload" accept="image/*" class="hidden">
       </label>
-
-
-      <!-- Optional photo effect -->
-      <div id="photoEffectPrompt" class="hidden mt-4 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-4 sm:p-5 shadow-sm">
-        <div class="flex items-start gap-3">
-          <div class="w-10 h-10 shrink-0 rounded-xl bg-[#0038a8]/10 text-[#0038a8] flex items-center justify-center">
-            <i class="fas fa-wand-magic-sparkles"></i>
-          </div>
-          <div class="flex-1">
-            <h3 class="font-bold text-slate-900 text-sm sm:text-base">¿Quieres desenfocar el fondo de tu foto?</h3>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
-              Podemos aplicar un efecto de profundidad suave para destacar tu fotografía. No se elimina ni recorta el fondo original.
-            </p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
-          <button type="button" onclick="enablePhotoBlur()" class="py-2.5 px-4 rounded-xl bg-[#0038a8] hover:bg-blue-800 text-white text-sm font-bold transition-all shadow-md">
-            Sí, desenfocar
-          </button>
-          <button type="button" onclick="skipPhotoBlur()" class="py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-sm font-semibold transition-all">
-            No, continuar
-          </button>
-        </div>
-      </div>
-
-      <!-- Optional effect controls -->
-      <div id="photoEffectControls" class="hidden mt-3 flex items-center justify-between gap-3 rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
-        <div class="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
-          <i class="fas fa-circle-half-stroke text-[#0038a8]"></i>
-          <span>Desenfoque activado</span>
-        </div>
-        <button type="button" onclick="undoPhotoBlur()" class="text-xs sm:text-sm font-bold text-[#0038a8] hover:underline">
+<button type="button" onclick="undoPhotoBlur()" class="text-xs sm:text-sm font-bold text-[#0038a8] hover:underline">
           Deshacer
         </button>
       </div>
-
-      <!-- Generate Button -->
-      <button onclick="triggerGenerate()" id="generateBtn" class="mt-5 w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#0038a8] to-blue-700 text-white font-bold shadow-lg shadow-[#0038a8]/25 hover:shadow-[#0038a8]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2.5">
-        <i class="fas fa-wand-magic-sparkles text-[#ff6b00]"></i> Generar mi flyer oficial
+      <!-- Download Button -->
+      <button onclick="downloadFlyer()" id="downloadBtn" disabled class="mt-5 opacity-60 cursor-not-allowed w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#00cc44] to-emerald-700 hover:opacity-95 text-white font-bold shadow-lg shadow-emerald-600/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2.5">
+        <i class="fas fa-download"></i> Descargar mi flyer oficial
       </button>
+
 
       <!-- Canvas Section -->
       <div id="canvasWrapper" class="hidden mt-6 space-y-4">
@@ -168,12 +136,12 @@
         </div>
 
         <div class="flex items-center justify-center gap-2 text-xs font-medium text-slate-600 bg-blue-50/80 py-2.5 px-4 rounded-xl border border-blue-200">
-          <i class="fas fa-arrows-up-down-left-right text-[#0038a8]"></i> <span>Arrastra para ajustar tu foto o usa la rueda para hacer zoom · Puedes deshacer el desenfoque cuando quieras</span>
+          <i class="fas fa-arrows-up-down-left-right text-[#0038a8]"></i> <span>Arrastra para ajustar tu foto o usa la rueda para hacer zoom</span>
         </div>
 
         <!-- Download Button -->
         <button onclick="downloadFlyer()" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#00cc44] to-emerald-700 hover:opacity-95 text-white font-bold shadow-lg shadow-emerald-600/25 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2.5">
-          <i class="fas fa-download"></i> Descargar flyer en máxima calidad (PNG)
+          <i class="fas fa-download"></i> Descargar mi flyer oficial (PNG)
         </button>
       </div>
     </div>
@@ -247,9 +215,7 @@ const ctx = canvas.getContext("2d");
 
 const upload = document.getElementById("upload");
 const canvasWrapper = document.getElementById("canvasWrapper");
-const generateBtn = document.getElementById("generateBtn");
-const photoEffectPrompt = document.getElementById("photoEffectPrompt");
-const photoEffectControls = document.getElementById("photoEffectControls");
+const downloadBtn = document.getElementById("downloadBtn");
 
 const img = new Image();
 const overlay = new Image();
@@ -267,7 +233,6 @@ let startX = 0;
 let startY = 0;
 let lastDist = null;
 
-let blurEnabled = false;
 
 // ------------------------------------------------------------------
 // OVERLAY OFICIAL
@@ -285,10 +250,11 @@ overlay.onerror = () => {
 
 // ------------------------------------------------------------------
 // CARGA DE UNA SOLA FOTOGRAFÍA
+// Al cargarla, el flyer se genera automáticamente.
 // ------------------------------------------------------------------
 upload.addEventListener("change", handleFile);
 
-async function handleFile(event) {
+function handleFile(event) {
   const file = event.target.files && event.target.files[0];
 
   if (!file) return;
@@ -304,9 +270,7 @@ async function handleFile(event) {
   reader.onload = function(e) {
     img.onload = function() {
       imageLoaded = true;
-      blurEnabled = false;
 
-      // Reinicia el encuadre.
       const coverScale = Math.max(
         canvas.width / img.naturalWidth,
         canvas.height / img.naturalHeight
@@ -319,17 +283,23 @@ async function handleFile(event) {
       canvasWrapper.classList.remove("hidden");
       canvasWrapper.style.display = "block";
 
-      // Reinicia la interfaz del efecto.
-      photoEffectControls.classList.add("hidden");
-      photoEffectPrompt.classList.remove("hidden");
+      downloadBtn.disabled = false;
+      downloadBtn.classList.remove("opacity-60", "cursor-not-allowed");
+      downloadBtn.innerHTML =
+        '<i class="fas fa-download"></i> Descargar mi flyer oficial';
 
-      generateBtn.disabled = false;
-      generateBtn.innerHTML =
-        '<i class="fas fa-wand-magic-sparkles text-[#ff6b00]"></i> Generar mi flyer oficial';
-
+      // El flyer aparece inmediatamente después de subir la foto.
       drawFlyer();
 
-      showToast("Fotografía cargada correctamente.");
+      // Llevar al usuario suavemente hacia la vista previa.
+      setTimeout(function() {
+        canvasWrapper.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+      }, 100);
+
+      showToast("Fotografía cargada. Tu flyer ya está listo.");
     };
 
     img.onerror = function() {
@@ -345,64 +315,6 @@ async function handleFile(event) {
   };
 
   reader.readAsDataURL(file);
-}
-
-// ------------------------------------------------------------------
-// OPCIÓN: SÍ QUIERO DESENFOCAR
-// ------------------------------------------------------------------
-function enablePhotoBlur() {
-  if (!imageLoaded) return;
-
-  blurEnabled = true;
-
-  photoEffectPrompt.classList.add("hidden");
-  photoEffectControls.classList.remove("hidden");
-
-  drawFlyer();
-
-  showToast("Efecto de profundidad aplicado.");
-}
-
-// ------------------------------------------------------------------
-// OPCIÓN: NO QUIERO DESENFOCAR
-// ------------------------------------------------------------------
-function skipPhotoBlur() {
-  if (!imageLoaded) return;
-
-  blurEnabled = false;
-
-  photoEffectPrompt.classList.add("hidden");
-  photoEffectControls.classList.add("hidden");
-
-  drawFlyer();
-
-  showToast("Continuamos con tu fotografía original.");
-}
-
-// ------------------------------------------------------------------
-// DESHACER
-// ------------------------------------------------------------------
-function undoPhotoBlur() {
-  blurEnabled = false;
-
-  photoEffectControls.classList.add("hidden");
-
-  drawFlyer();
-
-  showToast("Desenfoque deshecho.");
-}
-
-// ------------------------------------------------------------------
-// GENERAR
-// ------------------------------------------------------------------
-function triggerGenerate() {
-  if (!imageLoaded) {
-    showToast("Por favor selecciona una fotografía primero.");
-    return;
-  }
-
-  drawFlyer();
-  showToast("Flyer actualizado correctamente.");
 }
 
 // ------------------------------------------------------------------
@@ -453,10 +365,6 @@ function drawFlyer() {
   // hacemos un efecto de profundidad suave alrededor de la zona
   // central, sin eliminar ni recortar el fondo de la fotografía.
   // ---------------------------------------------------------------
-  if (blurEnabled) {
-    drawDepthEffect();
-  }
-
   // ---------------------------------------------------------------
   // OVERLAY OFICIAL
   // Siempre es la última capa.
@@ -514,88 +422,6 @@ function drawBackground() {
   darkGrad.addColorStop(1, "rgba(10,15,29,0.55)");
 
   ctx.fillStyle = darkGrad;
-  ctx.fillRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-}
-
-// ------------------------------------------------------------------
-// EFECTO DE PROFUNDIDAD SUAVE
-//
-// Importante:
-// No intenta recortar a la persona.
-// No elimina el fondo.
-// Crea una zona central de mayor nitidez y suaviza visualmente
-// las zonas exteriores de la misma fotografía.
-// ------------------------------------------------------------------
-function drawDepthEffect() {
-  const temp = document.createElement("canvas");
-
-  temp.width = canvas.width;
-  temp.height = canvas.height;
-
-  const tctx = temp.getContext("2d");
-
-  tctx.imageSmoothingEnabled = true;
-  tctx.imageSmoothingQuality = "high";
-
-  // Foto desenfocada completa.
-  tctx.save();
-  tctx.filter = "blur(9px) brightness(1.005) contrast(1.015)";
-
-  tctx.drawImage(
-    img,
-    posX,
-    posY,
-    img.naturalWidth * scale,
-    img.naturalHeight * scale
-  );
-
-  tctx.restore();
-
-  /*
-   * Máscara radial suave.
-   * El centro conserva la foto principal y los bordes reciben
-   * progresivamente la versión desenfocada.
-   */
-  const mask = tctx.createRadialGradient(
-    canvas.width * 0.5,
-    canvas.height * 0.47,
-    canvas.width * 0.18,
-    canvas.width * 0.5,
-    canvas.height * 0.47,
-    canvas.width * 0.62
-  );
-
-  mask.addColorStop(0, "rgba(0,0,0,0)");
-  mask.addColorStop(0.48, "rgba(0,0,0,0.03)");
-  mask.addColorStop(0.72, "rgba(0,0,0,0.35)");
-  mask.addColorStop(1, "rgba(0,0,0,0.90)");
-
-  tctx.globalCompositeOperation = "destination-in";
-  tctx.fillStyle = mask;
-  tctx.fillRect(0, 0, temp.width, temp.height);
-
-  ctx.drawImage(temp, 0, 0);
-
-  // Viñeta extremadamente ligera para reforzar el foco.
-  const vignette = ctx.createRadialGradient(
-    canvas.width * 0.5,
-    canvas.height * 0.45,
-    canvas.width * 0.25,
-    canvas.width * 0.5,
-    canvas.height * 0.45,
-    canvas.width * 0.78
-  );
-
-  vignette.addColorStop(0, "rgba(0,0,0,0)");
-  vignette.addColorStop(0.75, "rgba(0,0,0,0.02)");
-  vignette.addColorStop(1, "rgba(0,0,0,0.16)");
-
-  ctx.fillStyle = vignette;
   ctx.fillRect(
     0,
     0,
